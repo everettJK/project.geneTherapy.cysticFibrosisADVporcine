@@ -1,0 +1,162 @@
+---
+fontsize: 12pt
+geometry: margin=0.50in
+title:  "Analysis of piggyBac mediated integration in the porcine genome"
+date:   "`r format(Sys.Date(), format='%B %d, %Y')`"
+author: "John K. Everett, Ph.D. and Frederic Bushman, Ph.D."
+header-includes:
+    - \usepackage{caption}
+output:
+  pdf_document:
+    toc: true
+    keep_tex: yes
+    latex_engine: xelatex
+---
+
+```{r libLoad, echo=FALSE, message=FALSE}
+library(ggplot2)
+library(png)
+library(grid)
+library(knitr)
+library(kableExtra)
+
+load('data/report.RData')
+
+ppNum <- function(n){ format(n,big.mark=",", scientific=FALSE, trim=TRUE) }
+```
+\captionsetup[table]{labelformat=empty}
+
+# Introduction 
+
+The primary focus of this analysis is to assess the integration efficiency of a piggyBac transposon system targeting 
+the porcine genome where both the transposon and appropriate transposase are delivered via adenovirus vectors. 
+Eleven (11) porcine tissue samples, each with three replicates, were analyzed with the INSPIIRED^1^ integration site 
+pipeline where only sequencing from the 3' end of integrated transposons would yield porcine genomic sequences 
+required to map integration positions (Figure 1). 
+
+\vspace{0.5cm}
+
+*Figure 1*  
+
+```{r Figure1, fig.width=8, echo=FALSE}
+img <- readPNG("data/Fig1v3.png")
+grid.raster(img)
+```
+
+\newpage
+
+# Attrition of sequencing reads
+
+Table 1 below details the attrition of sequencing reads where technical replicates have been combined. 
+The unusally high number of reads that do not match the transposon vector and which do not align to the 
+susScr3 reference genome requires additional investigation.  
+  
+Sequencing reads originating from the 3' end of the targeted transposons were clustered with a sequence 
+identity threshold of 90% and the 20 most abundant clusters which include 84.1% of sequenceing reads are shown in Figure 2. 
+The 20 sequence clusters, except for cluster 18 (possibly from Candidatus Fluviicola) and cluster 20 (no clear source), 
+map to different adenovirus sequence variants. The representative sequence for each cluster is provided in Table S1. 
+Alternatively, this observation can be appreciated by reviewing the most frequent read sequences and how they align 
+to one another (Table S2). 
+
+\vspace{0.25cm}
+
+```{r runStats, echo=FALSE}
+row.names(runStats) <- NULL
+kable(runStats, 'latex', booktabs = TRUE, longtable = TRUE, align='l', linesep = "", caption = 'Table 1. INSPIIRED pipeline read attrition') %>% 
+  kable_styling(full_width = FALSE, font_size = 10,  latex_options = "striped") %>%
+  kable_styling(latex_options = c("repeat_header")) 
+```
+
+\vspace{0.25cm}
+
+*Figure 2. Most abundant clusters of similar reads (90% seq id) with cumulative percentages of all reads.*  
+\vspace{0.25cm}
+```{r readClusters90, echo=FALSE, fig.width=6, fig.height=4}
+readClusters90
+```
+\newpage
+
+# Characterization of identified integration sites
+
+Figure 3 below shows the distribution of integration sites across the porcine genome while Figure 4 shows the 
+upstream and downstream consensus sequence motifs adjacent to those sites. Differences between the genomic environments 
+of identified sites and the same number of randomly selected sites from a published lentiviral trial to correct 
+Wiskott-Aldrich syndrome (WAS) from which no adverse events have been reported is shown as a heat map in Figure S1^2^.  
+  
+The TTAA motif immediately following the identified sites (`r r$percentSitesTTAAdownstream` of sites) was expected given  transposase's affinity for this sequence though the AGGG motif immediately upstream (`r r$percentSitesAGGGupstream` of sites) 
+was not expected. This finding suggests that a number of integration sites may be false positives arising from mis-priming 
+against endogenous piggyBac/LOOPER elements in the porcine genome which are known to end in AGGG.  
+
+\vspace{0.25cm}
+
+*Figure 3. Distriubtion of identified integration sites.*  
+
+\vspace{0.50cm}
+
+```{r intSiteLocPlot, echo=FALSE, fig.height=3.5}
+intSiteLocPlot
+```
+\vspace{0.50cm}
+
+*Figure 4.*  
+*Concensus upstream (pos. 1-12) and downstream (pos. 13-24) sequence motifs adjacent to integration sites.*   
+\vspace{0.25cm}
+```{r upStreamDownStreamLogo, echo=FALSE, fig.height=3}
+upStreamDownStreamLogo
+```
+\newpage
+
+**Suplimentary figures and tables**  
+
+\vspace{1.0cm}
+*Figure S1.*  
+*ROC heatmap comparing the genomic environments of integration sites found in this analysis to those found in a published lentiviral study*   
+
+\vspace{1.0cm}
+
+```{r FS1, echo=FALSE, fig.height=5}
+heatMap1
+```
+
+\newpage
+
+```{r clusterRepsSeqs, echo=FALSE}
+d <- data.frame(Cluster=paste('Cluster', 1:20), 'Representative sequence' = clusterRepsSeqs)
+row.names(d) <- NULL
+kable(d, 'latex', booktabs = TRUE, longtable = TRUE, align='l', linesep = "", caption = 'Table S1. Sequence representatives from the most abundant read clusters.') %>% 
+  kable_styling(full_width = FALSE, font_size = 10,  latex_options = "striped") %>%
+  kable_styling(latex_options = c("repeat_header")) 
+```
+
+\vspace{1.0cm}
+
+```{r genomicSeqFreqTable_aligned, echo=FALSE}
+o <- read.csv('data/genomicSeqFreqTable_aligned.csv', header = TRUE)
+names(o) <- c('Genomic sequence', 'nReads', 'Cumm. %reads', 'Transpon vector position', 'Transposase vector position') 
+row.names(o) <- NULL
+
+kable(o, 'latex', booktabs = TRUE, longtable = TRUE, align='l', linesep = "", caption = "Table S2. Most abundant transposon 3' reads (ITR seqs removed)") %>% 
+  kable_styling(full_width = FALSE, font_size = 10,  latex_options = "striped") %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  column_spec(1, width = "37em", monospace = TRUE) %>% 
+  column_spec(2, width = "4em", monospace = TRUE) %>% 
+  column_spec(3, width = "3em", monospace = TRUE) %>%
+  column_spec(4, width = "4em", monospace = TRUE) %>%
+  column_spec(5, width = "4em", monospace = TRUE)
+```
+
+\newpage
+
+**References**  
+  
+1. INSPIIRED: A Pipeline for Quantitative Analysis of Sites of New DNA Integration in Cellular Genomes. 
+Sherman E, Nobles C, Berry CC, et al.  Molecular Therapy Methods & Clinical Development. 2017;4:39-49. doi:10.1016/j.omtm.2016.11.002.
+
+\vspace{0.10cm}
+
+2. Outcomes following gene therapy in patients with severe Wiskott-Aldrich syndrome. Hacein-Bey Abina S, Gaspar HB, 
+Blondeau J, Caccavelli L, Charrier S, Buckland K, Picard C, Six E, Himoudi N, Gilmour K, McNicol AM, Hara H, 
+Xu-Bayford J, Rivat C, Touzot F, Mavilio F, Lim A, Treluyer JM, Héritier S, Lefrère F, Magalon J, Pengue-Koyi I, 
+Honnet G, Blanche S, Sherman EA, Male F, Berry C, Malani N, Bushman FD, Fischer A, Thrasher AJ, Galy A, Cavazzana M. 
+JAMA. 2015 Apr 21;313(15):1550-63.  
+

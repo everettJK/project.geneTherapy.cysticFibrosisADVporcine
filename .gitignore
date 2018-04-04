@@ -1,0 +1,3 @@
+data/*.2bit
+data/genomicSequences_50NT*
+data/project.RData

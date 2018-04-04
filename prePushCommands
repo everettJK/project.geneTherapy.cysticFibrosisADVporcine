@@ -1,0 +1,4 @@
+rm -rf project_cache project_files sites_mrcs.gen project.tex
+rm -rf output/*
+touch output/.include
+find ./ -type f -size +99M
