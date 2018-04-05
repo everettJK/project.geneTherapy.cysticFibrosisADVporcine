@@ -278,6 +278,19 @@ save.image(file='data/project.RData')
 save(r, heatMap1,  runStats, clusterRepsSeqs, intSiteTable, intSiteLocPlot, upStreamDownStreamLogo, readClusters90, file='data/report.RData')
 
 
+# Write out intSites.
+intSites %>%
+data.frame() %>%
+select(patient, sampleName, cellType, timePoint, posid, estAbund, nearestFeature, nearestFeatureDist) %>%
+rename(inferredCells = estAbund) %>%
+arrange(desc(inferredCells)) %>%
+write.csv(file='intSites.csv', row.names=FALSE) 
+
+system('scp intSites.csv microb120:/media/lorax/data/export/reports/everett/project.geneTherapy.cysticFibrosisADVporcine.csv')
+
+
+
+
 rmarkdown::render('project.Rmd', 
                   params = list('author' = 'John K. Everett, Ph.D. and Frederic Bushman, Ph.D.',
                                 'date'  = format(Sys.Date(), format="%B %d, %Y"),
